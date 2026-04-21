@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
   },
   // Recommended for static hosting on GitHub Pages
   trailingSlash: true,
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
+  allowedDevOrigins: ['10.158.42.128'],
 };
 
 export default nextConfig;

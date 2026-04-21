@@ -35,6 +35,12 @@ function HostContent() {
       return;
     }
 
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      setErrorMessage('Screen sharing is not supported in this browser or requires an HTTPS connection.');
+      setStatus('ERROR');
+      return;
+    }
+
     setStatus('CONNECTING');
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
@@ -71,6 +77,12 @@ function HostContent() {
             if (!isLocked || data.password === password) {
               conn.send({ type: 'auth-success' });
               dataConnectionsRef.current.set(conn.peer, conn);
+              
+              // Immediately call the viewer with the stream
+              if (streamRef.current) {
+                console.log('Calling viewer:', conn.peer);
+                peer.call(conn.peer, streamRef.current);
+              }
             } else {
               conn.send({ type: 'auth-failed', message: 'Incorrect password' });
             }

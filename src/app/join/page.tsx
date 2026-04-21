@@ -43,32 +43,38 @@ function JoinContent() {
     try {
       const peer = new Peer();
       peerRef.current = peer;
+peer.on('open', () => {
+  const conn = peer.connect(`web-screenshare-app-${sessionId}`);
 
-      peer.on('open', () => {
-        const conn = peer.connect(`web-screenshare-app-${sessionId}`);
-        
-        conn.on('open', () => {
-          conn.send({ type: 'auth', password: providedPassword });
-        });
+  // Listen for incoming call from host
+  peer.on('call', (call) => {
+    console.log('Received call from host');
+    call.answer(); // Answer with no stream
 
-        conn.on('data', (data: any) => {
-          if (data.type === 'auth-success') {
-            setStatus('CONNECTING');
-            const call = peer.call(`web-screenshare-app-${sessionId}`, new MediaStream());
-            
-            call.on('stream', (remoteStream) => {
-              if (videoRef.current) {
-                videoRef.current.srcObject = remoteStream;
-                setStatus('CONNECTED');
-              }
-            });
+    call.on('stream', (remoteStream) => {
+      console.log('Received stream from host');
+      if (videoRef.current) {
+        videoRef.current.srcObject = remoteStream;
+        setStatus('CONNECTED');
+      }
+    });
 
-            call.on('error', (err) => {
-              console.error('Call error:', err);
-              setErrorMessage('Failed to receive video stream.');
-              setStatus('ERROR');
-            });
-          } else if (data.type === 'auth-failed') {
+    call.on('error', (err) => {
+      console.error('Call error:', err);
+      setErrorMessage('Failed to receive video stream.');
+      setStatus('ERROR');
+    });
+  });
+
+  conn.on('open', () => {
+    conn.send({ type: 'auth', password: providedPassword });
+  });
+
+  conn.on('data', (data: any) => {
+    if (data.type === 'auth-success') {
+      setStatus('CONNECTING');
+      // Host will now call us
+    } else if (data.type === 'auth-failed') {
             setErrorMessage(data.message || 'Incorrect password');
             setStatus('IDLE');
             peer.destroy();

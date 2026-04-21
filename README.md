@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WebScreen
 
-## Getting Started
+The simplest way to share your iPad screen to any computer. 
 
-First, run the development server:
+## 🚀 Deployment to GitHub Pages
+
+If you are seeing this README instead of the application on your GitHub Pages site, please follow these steps:
+
+1.  **Configure GitHub Pages Source:**
+    *   Go to your repository **Settings** on GitHub.
+    *   Select **Pages** from the left sidebar.
+    *   Under **Build and deployment > Source**, select **GitHub Actions** from the dropdown.
+
+2.  **Trigger the Deployment:**
+    *   Once you've changed the source, the GitHub Action in `.github/workflows/deploy.yml` will handle the build and deployment automatically whenever you push to `main`.
+    *   You can manually trigger it from the **Actions** tab by selecting "Deploy Next.js site to Pages" and clicking "Run workflow".
+
+## 🛠 Features
+
+- **P2P Streaming:** Uses WebRTC (via PeerJS) for low-latency, direct screen sharing.
+- **Privacy:** Optional password protection for sessions.
+- **No Install:** Works entirely in the browser using `getDisplayMedia`.
+- **Full Screen:** Viewer can toggle full screen mode for a clear view.
+
+## 💻 Local Development
 
 ```bash
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Build static version
+npm run build
 ```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

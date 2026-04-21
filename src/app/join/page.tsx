@@ -12,6 +12,7 @@ function JoinContent() {
   const [status, setStatus] = useState<'IDLE' | 'AUTHENTICATING' | 'CONNECTING' | 'CONNECTED' | 'ERROR'>('IDLE');
   const [errorMessage, setErrorMessage] = useState('');
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   const peerRef = useRef<Peer | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -30,6 +31,14 @@ function JoinContent() {
     };
   }, []);
 
+  // Attach stream to video element when both are ready
+  useEffect(() => {
+    if (videoRef.current && remoteStream) {
+      console.log('Attaching stream to video element');
+      videoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream, status]);
+
   const connectToSession = async (providedPassword = '') => {
     if (!sessionId) {
       setErrorMessage('No session ID found in URL.');
@@ -43,38 +52,37 @@ function JoinContent() {
     try {
       const peer = new Peer();
       peerRef.current = peer;
-peer.on('open', () => {
-  const conn = peer.connect(`web-screenshare-app-${sessionId}`);
 
-  // Listen for incoming call from host
-  peer.on('call', (call) => {
-    console.log('Received call from host');
-    call.answer(); // Answer with no stream
+      peer.on('open', () => {
+        const conn = peer.connect(`web-screenshare-app-${sessionId}`);
+        
+        // Listen for incoming call from host
+        peer.on('call', (call) => {
+          console.log('Received call from host');
+          call.answer(); // Answer with no stream
+          
+          call.on('stream', (stream) => {
+            console.log('Received stream event');
+            setRemoteStream(stream);
+            setStatus('CONNECTED');
+          });
 
-    call.on('stream', (remoteStream) => {
-      console.log('Received stream from host');
-      if (videoRef.current) {
-        videoRef.current.srcObject = remoteStream;
-        setStatus('CONNECTED');
-      }
-    });
+          call.on('error', (err) => {
+            console.error('Call error:', err);
+            setErrorMessage('Failed to receive video stream.');
+            setStatus('ERROR');
+          });
+        });
 
-    call.on('error', (err) => {
-      console.error('Call error:', err);
-      setErrorMessage('Failed to receive video stream.');
-      setStatus('ERROR');
-    });
-  });
+        conn.on('open', () => {
+          conn.send({ type: 'auth', password: providedPassword });
+        });
 
-  conn.on('open', () => {
-    conn.send({ type: 'auth', password: providedPassword });
-  });
-
-  conn.on('data', (data: any) => {
-    if (data.type === 'auth-success') {
-      setStatus('CONNECTING');
-      // Host will now call us
-    } else if (data.type === 'auth-failed') {
+        conn.on('data', (data: any) => {
+          if (data.type === 'auth-success') {
+            console.log('Auth success received');
+            setStatus('CONNECTING');
+          } else if (data.type === 'auth-failed') {
             setErrorMessage(data.message || 'Incorrect password');
             setStatus('IDLE');
             peer.destroy();

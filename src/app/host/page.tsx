@@ -44,7 +44,13 @@ function HostContent() {
     setStatus('CONNECTING');
     try {
       const stream = await navigator.mediaDevices.getDisplayMedia({
-        video: { cursor: "always" } as any,
+        video: { 
+          cursor: "always",
+          displaySurface: "monitor",
+          frameRate: { ideal: 60, max: 60 },
+          width: { ideal: 1920, max: 3840 },
+          height: { ideal: 1080, max: 2160 }
+        } as any,
         audio: false
       });
       streamRef.current = stream;
@@ -77,6 +83,7 @@ function HostContent() {
             if (!isLocked || data.password === password) {
               conn.send({ type: 'auth-success' });
               dataConnectionsRef.current.set(conn.peer, conn);
+              setConnections(dataConnectionsRef.current.size);
               
               // Immediately call the viewer with the stream
               if (streamRef.current) {
@@ -93,14 +100,6 @@ function HostContent() {
           dataConnectionsRef.current.delete(conn.peer);
           setConnections(dataConnectionsRef.current.size);
         });
-
-        setConnections(dataConnectionsRef.current.size + 1);
-      });
-
-      peer.on('call', (call) => {
-        if (dataConnectionsRef.current.has(call.peer)) {
-          call.answer(streamRef.current!);
-        }
       });
 
     } catch (err) {
